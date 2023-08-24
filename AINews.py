@@ -5,9 +5,12 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 def fetch_news(stock):
     url = f"https://newsapi.org/v2/everything?q={stock}&apiKey=YOUR_API_KEY"
     response = requests.get(url)
+    if response.status_code != 200:
+        print(f"Failed to fetch news. Status code: {response.status_code}")
+        print(response.json())
+        return []
     data = response.json()
-    articles = data['articles']
-    return [(article['title'], article['url']) for article in articles]
+    return [(article['title'], article['url']) for article in data.get('articles', [])]
 
 def extract_text(url):
     article = Article(url)
@@ -19,16 +22,18 @@ def summarize_text(text):
     model_name = "facebook/bart-large-cnn"
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-
-    inputs = tokenizer([text], max_length=1024, return_tensors='pt')
+    
+    inputs = tokenizer([text], max_length=1024, truncation=True, return_tensors='pt')
     summary_ids = model.generate(inputs.input_ids, num_beams=4, min_length=30, max_length=100, early_stopping=True)
-
-    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    return summary
+    
+    return tokenizer.decode(summary_ids[0], skip_special_tokens=True)
 
 def get_stock_news_summary(stock):
     news_data = fetch_news(stock)
     summaries = []
+    
+    if not news_data:
+        return []
     
     for title, url in news_data:
         text = extract_text(url)

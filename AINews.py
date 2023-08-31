@@ -1,17 +1,19 @@
 import os
 import requests
+from datetime import datetime, timedelta
 from newspaper import Article
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 def fetch_news(stock):
-    api_key = "your_actual_api_key_here"  # Hardcode the API key
-    if not api_key:
-        print("No API Key found.")
-        return []
-    
-    url = f"https://newsapi.org/v2/everything?q={stock}&apiKey={api_key}"
+    api_key = "your_actual_api_key_here"  # Hardcoded API key, replace with your own
+    date_to = datetime.now().isoformat()
+    date_from = (datetime.now() - timedelta(days=1)).isoformat()
+
+    sources = "bbc-news,the-verge,abc-news,financial-times,cnn"  # Add more sources as you like
+
+    url = f"https://newsapi.org/v2/everything?q={stock}&from={date_from}&to={date_to}&language=en&sources={sources}&apiKey={api_key}"
     response = requests.get(url)
-    
+
     if response.status_code != 200:
         print(f"Failed to fetch news. Status code: {response.status_code}")
         return []

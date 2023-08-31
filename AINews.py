@@ -3,14 +3,16 @@ from newspaper import Article
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 def fetch_news(stock):
-    url = f"https://newsapi.org/v2/everything?q={stock}&apiKey=YOUR_API_KEY"
-    response = requests.get(url)
-    if response.status_code != 200:
-        print(f"Failed to fetch news. Status code: {response.status_code}")
-        print(response.json())
+    try:
+        url = f"https://newsapi.org/v2/everything?q={stock}&apiKey=YOUR_API_KEY"
+        response = requests.get(url)
+        response.raise_for_status()  # Raise HTTPError for bad responses
+        data = response.json()
+        return [(article['title'], article['url']) for article in data.get('articles', [])]
+    except requests.RequestException as e:
+        print(f"Failed to fetch news: {e}")
         return []
-    data = response.json()
-    return [(article['title'], article['url']) for article in data.get('articles', [])]
+
 
 def extract_text(url):
     article = Article(url)

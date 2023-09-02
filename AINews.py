@@ -5,7 +5,7 @@ from newspaper import Article
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 def fetch_news(stock):
-    api_key = "your_actual_api_key_here"  # Hardcoded API key, replace with your own
+    api_key = "your_actual_api_key_here"
     date_to = datetime.now().isoformat()
     date_from = (datetime.now() - timedelta(days=1)).isoformat()
 

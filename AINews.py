@@ -8,8 +8,8 @@ def fetch_news(stock):
     api_key = "your_actual_api_key_here"
     date_to = datetime.now().isoformat()
     date_from = (datetime.now() - timedelta(days=1)).isoformat()
-
-    sources = "bbc-news,the-verge,abc-news,financial-times,cnn"  # Add more sources as you like
+    # Add more sources as you like
+    sources = "abc-news,al-jazeera-english,associated-press,bbc-news,bloomberg,business-insider,cbs-news,cnbc,cnn,financial-times,fortune,fox-news,google-news,independent,msnbc,national-geographic,national-review,nbc-news,new-york-magazine,newsweek,politico,reuters,techcrunch,the-globe-and-mail,the-hill,the-new-york-times,the-verge,the-wall-street-journal,the-washington-post,time,usa-today,vice-news"
 
     url = f"https://newsapi.org/v2/everything?q={stock}&from={date_from}&to={date_to}&language=en&sources={sources}&apiKey={api_key}"
     response = requests.get(url)

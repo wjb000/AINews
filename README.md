@@ -9,14 +9,6 @@ AINews is a Python program that fetches and analyzes news articles related to a 
 - Performs sentiment analysis on the summaries
 - Displays the results in a Streamlit UI
 
-## Dependencies
-
-- Python 3.6+
-- Streamlit
-- Requests
-- Newspaper3k
-- Transformers
-- TextBlob
 
 ## Usage
 

@@ -2,7 +2,6 @@ import requests
 from datetime import datetime, timedelta
 from newspaper import Article
 from transformers import pipeline
-from textblob import TextBlob
 import streamlit as st
 
 def fetch_news(stock):
@@ -34,35 +33,45 @@ def summarize_text(text):
     return summary[0]['summary_text']
 
 def sentiment_analysis(text):
-    analysis = TextBlob(text)
-    polarity = analysis.sentiment.polarity
-    if polarity > 0.2:
-        return 'Positive'
-    elif polarity < -0.2:
-        return 'Negative'
-    else:
-        return 'Neutral'
+    sentiment_analyzer = pipeline("sentiment-analysis", model="mrm8488/distilroberta-finetuned-financial-news-sentiment-analysis", truncation=True, max_length=512)
+    sentiment = sentiment_analyzer(text[:512])[0]
+    return sentiment['label']
 
-def display_results(news_data):
+def is_relevant(text, stock):
+    return stock.lower() in text.lower()
+
+def display_results(news_data, stock):
+    relevant_articles = 0
     for i, (title, url) in enumerate(news_data):
-        st.subheader(f"Article {i+1}: {title}")
-        st.write(f"URL: {url}")
         text = extract_text(url)
-        summary = summarize_text(text)
-        sentiment = sentiment_analysis(summary)
-        st.write(f"Summary: {summary}")
-        st.write(f"Sentiment: {sentiment}")
+        if text and is_relevant(text, stock):
+            st.subheader(f"Article {relevant_articles + 1}: {title}")
+            st.write(f"URL: {url}")
+            summary = summarize_text(text)
+            sentiment = sentiment_analysis(text)
+            st.write(f"Summary: {summary}")
+            st.write(f"Sentiment: {sentiment}")
+            relevant_articles += 1
+        elif is_relevant(title, stock):
+            st.subheader(f"Article {relevant_articles + 1}: {title}")
+            st.write(f"URL: {url}")
+            sentiment = sentiment_analysis(title)
+            st.write("Failed to extract article content.")
+            st.write(f"Sentiment (based on title): {sentiment}")
+            relevant_articles += 1
+    
+    if relevant_articles == 0:
+        st.warning("No relevant articles found.")
 
 def main():
     st.title("Stock News Analyzer")
     stock = st.text_input("Enter the stock you're interested in:")
-
     if st.button("Analyze"):
         news_data = fetch_news(stock)
         if not news_data:
             st.warning("No news found.")
         else:
-            display_results(news_data)
+            display_results(news_data, stock)
 
 if __name__ == "__main__":
     main()
